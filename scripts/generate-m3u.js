@@ -6,6 +6,7 @@ const http = require('http');
 const NZ_PLAYLIST_URL = 'https://i.mjh.nz/nz/raw-tv.m3u8';
 const AU_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/au.m3u';
 const UK_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/uk.m3u';
+const US_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/us.m3u';
 const CACHE_FILE = path.join(__dirname, '..', 'stream-cache.json');
 const CACHE_EXPIRY_DAYS = 7;
 
@@ -164,6 +165,27 @@ async function checkStream(url, timeout = 5000, redirectCount = 0) {
             });
             return;
           }
+          
+          // Check for resolution information in HLS manifest
+          const resolutionMatches = data.matchAll(/RESOLUTION=(\d+)x(\d+)/g);
+          let maxHeight = 0;
+          
+          for (const match of resolutionMatches) {
+            const height = parseInt(match[2], 10);
+            if (height > maxHeight) {
+              maxHeight = height;
+            }
+          }
+          
+          // If we found resolution info and max is below 720p, reject it
+          if (maxHeight > 0 && maxHeight < 720) {
+            safeResolve({
+              url,
+              working: false,
+              error: `Low resolution: ${maxHeight}p (minimum 720p required)`
+            });
+            return;
+          }
         }
         
         // Check if we got any data
@@ -280,7 +302,7 @@ function filterUnwantedChannels(streams) {
   const unwantedKeywords = [
     // Religious
     'hope channel', 'shine', 'gospel', 'church', 'christian', 'faith',
-    'god', 'bible', 'christ', 'prayer', 'worship', 'religious',
+    'god', 'bible', 'christ', 'prayer', 'worship', 'religious', 'ewtn',
     
     // Shopping
     'tvsn', 'shopping', 'expo channel', 'qvc', 'jewellery', 'jewelry',
@@ -293,20 +315,54 @@ function filterUnwantedChannels(streams) {
     'liveevent'
   ];
   
+  // US-specific unwanted keywords
+  const usUnwantedKeywords = ['pluto', 'trinity', 'tvs', 'ntd'];
+  
   // Allowed AU channels (everything else from AU will be filtered out)
   const allowedAUChannels = ['abc', 'channel 44', 'c31'];
   
   // Allowed UK channels (everything else from UK will be filtered out)
   const allowedUKChannels = ['cnbc', 'iraninternational', 'bloomberg', 'bbc'];
   
+  // Allowed US channels (everything else from US will be filtered out)
+  const allowedUSChannels = [];  // Empty = allow all US channels for now
+  
   return streams.filter(stream => {
     const nameMatch = stream.extinf.match(/,\s*(.+)$/);
     const channelName = nameMatch ? nameMatch[1].trim().toLowerCase() : '';
+    const channelNameRaw = nameMatch ? nameMatch[1].trim() : '';
     
     // Check if channel name contains any unwanted keywords
     for (const keyword of unwantedKeywords) {
       if (channelName.includes(keyword)) {
         return false;
+      }
+    }
+    
+    // For US channels, apply additional filters
+    if (stream.source === 'US') {
+      // Exclude channels starting with W
+      if (channelNameRaw.startsWith('W')) {
+        return false;
+      }
+      
+      // Check US-specific unwanted keywords
+      for (const keyword of usUnwantedKeywords) {
+        if (channelName.includes(keyword)) {
+          return false;
+        }
+      }
+      
+      // Only allow specific ones if whitelist is not empty
+      if (allowedUSChannels.length > 0) {
+        let isAllowed = false;
+        for (const allowed of allowedUSChannels) {
+          if (channelName.includes(allowed)) {
+            isAllowed = true;
+            break;
+          }
+        }
+        return isAllowed;
       }
     }
     
@@ -367,6 +423,28 @@ function sortChannels(streams) {
     if (isMoodA && !isMoodB) return 1;
     if (!isMoodA && isMoodB) return -1;
     
+    // For US channels, prioritize news channels
+    const isUSA = a.source === 'US';
+    const isUSB = b.source === 'US';
+    
+    if (isUSA && isUSB) {
+      // Extract channel name
+      const getChannelName = (extinf) => {
+        const match = extinf.match(/,\s*(.+)$/);
+        return match ? match[1].trim().toLowerCase() : '';
+      };
+      
+      const nameA = getChannelName(a.extinf);
+      const nameB = getChannelName(b.extinf);
+      
+      const isNewsA = nameA.includes('news');
+      const isNewsB = nameB.includes('news');
+      
+      // News channels come first among US channels
+      if (isNewsA && !isNewsB) return -1;
+      if (!isNewsA && isNewsB) return 1;
+    }
+    
     // Extract tvg-chno for numeric sorting
     const getChannelNumber = (extinf) => {
       const match = extinf.match(/tvg-chno="(\d+)"/);
@@ -404,6 +482,10 @@ async function generatePlaylist() {
     const ukContent = await fetchPlaylist(UK_PLAYLIST_URL);
     console.log('✓ UK Playlist fetched successfully');
     
+    console.log('Fetching US playlist from:', US_PLAYLIST_URL);
+    const usContent = await fetchPlaylist(US_PLAYLIST_URL);
+    console.log('✓ US Playlist fetched successfully');
+    
     // Parse all playlists
     const parseM3U = (content, source) => {
       const lines = content.split('\n');
@@ -436,11 +518,12 @@ async function generatePlaylist() {
     const nzStreams = parseM3U(nzContent, 'NZ');
     const auStreams = parseM3U(auContent, 'AU');
     const ukStreams = parseM3U(ukContent, 'UK');
+    const usStreams = parseM3U(usContent, 'US');
     
-    console.log(`\nFound ${nzStreams.length} NZ streams, ${auStreams.length} AU streams, and ${ukStreams.length} UK streams`);
+    console.log(`\nFound ${nzStreams.length} NZ streams, ${auStreams.length} AU streams, ${ukStreams.length} UK streams, and ${usStreams.length} US streams`);
     
     // Combine and deduplicate
-    const allStreams = [...nzStreams, ...auStreams, ...ukStreams];
+    const allStreams = [...nzStreams, ...auStreams, ...ukStreams, ...usStreams];
     const uniqueStreams = deduplicateChannels(allStreams);
     
     console.log(`✓ After deduplication: ${uniqueStreams.length} unique streams`);

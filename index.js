@@ -1,8 +1,8 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const https = require('https');
-const zlib = require('zlib');
+// const https = require('https');
+// const zlib = require('zlib');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,24 +19,24 @@ app.get('/playlist.m3u', (req, res) => {
   }
 });
 
-// Dynamic EPG XML route
-app.get('/epg.xml', (req, res) => {
-  const epgUrl = 'https://i.mjh.nz/nz/epg.xml.gz';
+// // Dynamic EPG XML route
+// app.get('/epg.xml', (req, res) => {
+//   const epgUrl = 'https://i.mjh.nz/nz/epg.xml.gz';
   
-  https.get(epgUrl, (response) => {
-    if (response.statusCode !== 200) {
-      return res.status(response.statusCode).send('Failed to fetch EPG');
-    }
+//   https.get(epgUrl, (response) => {
+//     if (response.statusCode !== 200) {
+//       return res.status(response.statusCode).send('Failed to fetch EPG');
+//     }
     
-    res.setHeader('Content-Type', 'application/xml');
+//     res.setHeader('Content-Type', 'application/xml');
     
-    // Decompress the gzipped content and pipe to response
-    response.pipe(zlib.createGunzip()).pipe(res);
-  }).on('error', (err) => {
-    console.error('Error fetching EPG:', err);
-    res.status(500).send('Error fetching EPG');
-  });
-});
+//     // Decompress the gzipped content and pipe to response
+//     response.pipe(zlib.createGunzip()).pipe(res);
+//   }).on('error', (err) => {
+//     console.error('Error fetching EPG:', err);
+//     res.status(500).send('Error fetching EPG');
+//   });
+// });
 
 // Health check
 app.get('/', (req, res) => {
