@@ -5,6 +5,42 @@ const http = require('http');
 
 const NZ_PLAYLIST_URL = 'https://i.mjh.nz/nz/raw-tv.m3u8';
 const AU_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/au.m3u';
+const UK_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/uk.m3u';
+const CACHE_FILE = path.join(__dirname, '..', 'stream-cache.json');
+const CACHE_EXPIRY_DAYS = 7;
+
+function loadCache() {
+  try {
+    if (fs.existsSync(CACHE_FILE)) {
+      const data = fs.readFileSync(CACHE_FILE, 'utf8');
+      const cache = JSON.parse(data);
+      const expiryTime = Date.now() - (CACHE_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+      
+      // Filter out expired entries
+      const validCache = {};
+      for (const [url, result] of Object.entries(cache)) {
+        if (result.timestamp && result.timestamp > expiryTime) {
+          validCache[url] = result;
+        }
+      }
+      
+      console.log(`✓ Loaded ${Object.keys(validCache).length} cached stream results`);
+      return validCache;
+    }
+  } catch (error) {
+    console.log('⚠ Could not load cache:', error.message);
+  }
+  return {};
+}
+
+function saveCache(cache) {
+  try {
+    fs.writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2));
+    console.log(`✓ Saved ${Object.keys(cache).length} stream results to cache`);
+  } catch (error) {
+    console.log('⚠ Could not save cache:', error.message);
+  }
+}
 
 async function fetchPlaylist(url) {
   return new Promise((resolve, reject) => {
@@ -248,11 +284,20 @@ function filterUnwantedChannels(streams) {
     
     // Shopping
     'tvsn', 'shopping', 'expo channel', 'qvc', 'jewellery', 'jewelry',
-    'beauty', 'shop', 'buy', 'home shopping'
+    'beauty', 'shop', 'buy', 'home shopping',
+    
+    // Kids
+    'cbeebies',
+    
+    // Other
+    'liveevent'
   ];
   
   // Allowed AU channels (everything else from AU will be filtered out)
   const allowedAUChannels = ['abc', 'channel 44', 'c31'];
+  
+  // Allowed UK channels (everything else from UK will be filtered out)
+  const allowedUKChannels = ['cnbc', 'iraninternational', 'bloomberg', 'bbc'];
   
   return streams.filter(stream => {
     const nameMatch = stream.extinf.match(/,\s*(.+)$/);
@@ -269,6 +314,20 @@ function filterUnwantedChannels(streams) {
     if (stream.source === 'AU') {
       let isAllowed = false;
       for (const allowed of allowedAUChannels) {
+        if (channelName.includes(allowed)) {
+          isAllowed = true;
+          break;
+        }
+      }
+      if (!isAllowed) {
+        return false;
+      }
+    }
+    
+    // For UK channels, only allow specific ones
+    if (stream.source === 'UK') {
+      let isAllowed = false;
+      for (const allowed of allowedUKChannels) {
         if (channelName.includes(allowed)) {
           isAllowed = true;
           break;
@@ -341,8 +400,12 @@ async function generatePlaylist() {
     const auContent = await fetchPlaylist(AU_PLAYLIST_URL);
     console.log('✓ AU Playlist fetched successfully');
     
-    // Parse both playlists
-    const parseM3U = (content) => {
+    console.log('Fetching UK playlist from:', UK_PLAYLIST_URL);
+    const ukContent = await fetchPlaylist(UK_PLAYLIST_URL);
+    console.log('✓ UK Playlist fetched successfully');
+    
+    // Parse all playlists
+    const parseM3U = (content, source) => {
       const lines = content.split('\n');
       const streams = [];
       
@@ -360,7 +423,7 @@ async function generatePlaylist() {
               streams.push({
                 extinf: extinfLine,
                 url: nextLine,
-                source: content === nzContent ? 'NZ' : 'AU'
+                source: source
               });
               break;
             }
@@ -370,13 +433,14 @@ async function generatePlaylist() {
       return streams;
     };
     
-    const nzStreams = parseM3U(nzContent);
-    const auStreams = parseM3U(auContent);
+    const nzStreams = parseM3U(nzContent, 'NZ');
+    const auStreams = parseM3U(auContent, 'AU');
+    const ukStreams = parseM3U(ukContent, 'UK');
     
-    console.log(`\nFound ${nzStreams.length} NZ streams and ${auStreams.length} AU streams`);
+    console.log(`\nFound ${nzStreams.length} NZ streams, ${auStreams.length} AU streams, and ${ukStreams.length} UK streams`);
     
     // Combine and deduplicate
-    const allStreams = [...nzStreams, ...auStreams];
+    const allStreams = [...nzStreams, ...auStreams, ...ukStreams];
     const uniqueStreams = deduplicateChannels(allStreams);
     
     console.log(`✓ After deduplication: ${uniqueStreams.length} unique streams`);
@@ -385,23 +449,45 @@ async function generatePlaylist() {
     const filteredStreams = filterUnwantedChannels(uniqueStreams);
     
     console.log(`✓ After filtering: ${filteredStreams.length} streams (removed ${uniqueStreams.length - filteredStreams.length} unwanted channels)`);
+    
+    // Load cache
+    const cache = loadCache();
+    
     console.log(`Checking which ones work (timeout: 5s per stream)...`);
     
     // Check streams in batches to avoid overwhelming the network
     const batchSize = 5;
     const results = [];
+    let cacheHits = 0;
+    let cacheMisses = 0;
     
     for (let i = 0; i < filteredStreams.length; i += batchSize) {
       const batch = filteredStreams.slice(i, i + batchSize);
       const batchResults = await Promise.all(
-        batch.map(stream => checkStream(stream.url))
+        batch.map(stream => {
+          if (cache[stream.url]) {
+            cacheHits++;
+            return Promise.resolve(cache[stream.url]);
+          } else {
+            cacheMisses++;
+            return checkStream(stream.url).then(result => {
+              // Add timestamp and save to cache
+              result.timestamp = Date.now();
+              cache[stream.url] = result;
+              return result;
+            });
+          }
+        })
       );
       results.push(...batchResults);
       
       const workingCount = results.filter(r => r.working).length;
       const failedCount = results.filter(r => !r.working).length;
-      console.log(`Progress: ${results.length}/${filteredStreams.length} checked, ${workingCount} working, ${failedCount} failed`);
+      console.log(`Progress: ${results.length}/${filteredStreams.length} checked, ${workingCount} working, ${failedCount} failed (${cacheHits} cached, ${cacheMisses} new)`);
     }
+    
+    // Save updated cache
+    saveCache(cache);
     
     console.log('\n✓ All streams checked, filtering results...');
     
