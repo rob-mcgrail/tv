@@ -4,6 +4,7 @@ const https = require('https');
 const http = require('http');
 
 const NZ_PLAYLIST_URL = 'https://i.mjh.nz/nz/raw-tv.m3u8';
+const AU_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/au.m3u';
 
 async function fetchPlaylist(url) {
   return new Promise((resolve, reject) => {
@@ -27,10 +28,28 @@ async function fetchPlaylist(url) {
   });
 }
 
-async function checkStream(url, timeout = 10000, redirectCount = 0) {
+async function checkStream(url, timeout = 5000, redirectCount = 0) {
   const maxRedirects = 5;
   
   return new Promise((resolve) => {
+    let isResolved = false;
+    
+    const safeResolve = (result) => {
+      if (!isResolved) {
+        isResolved = true;
+        resolve(result);
+      }
+    };
+    
+    // Set an absolute timeout as a failsafe
+    const absoluteTimeout = setTimeout(() => {
+      safeResolve({
+        url,
+        working: false,
+        error: 'Absolute timeout'
+      });
+    }, timeout + 1000);
+    
     const urlObj = new URL(url);
     const protocol = urlObj.protocol === 'https:' ? https : http;
     
@@ -44,9 +63,10 @@ async function checkStream(url, timeout = 10000, redirectCount = 0) {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         res.resume();
         request.destroy();
+        clearTimeout(absoluteTimeout);
         
         if (redirectCount >= maxRedirects) {
-          resolve({
+          safeResolve({
             url,
             working: false,
             error: 'Too many redirects'
@@ -56,7 +76,9 @@ async function checkStream(url, timeout = 10000, redirectCount = 0) {
         
         // Follow the redirect
         const redirectUrl = new URL(res.headers.location, url).href;
-        checkStream(redirectUrl, timeout, redirectCount + 1).then(resolve);
+        checkStream(redirectUrl, timeout, redirectCount + 1).then((result) => {
+          safeResolve(result);
+        });
         return;
       }
       
@@ -68,7 +90,8 @@ async function checkStream(url, timeout = 10000, redirectCount = 0) {
       if (res.statusCode < 200 || res.statusCode >= 300) {
         res.resume();
         request.destroy();
-        resolve({
+        clearTimeout(absoluteTimeout);
+        safeResolve({
           url,
           working: false,
           statusCode: res.statusCode
@@ -88,6 +111,7 @@ async function checkStream(url, timeout = 10000, redirectCount = 0) {
       
       res.on('end', () => {
         request.destroy();
+        clearTimeout(absoluteTimeout);
         
         // For m3u8 files, check if it's a valid HLS playlist
         if (url.includes('.m3u8')) {
@@ -97,7 +121,7 @@ async function checkStream(url, timeout = 10000, redirectCount = 0) {
                              data.includes('.m3u8');
           
           if (!hasValidHLS) {
-            resolve({
+            safeResolve({
               url,
               working: false,
               error: 'Invalid HLS content'
@@ -108,7 +132,7 @@ async function checkStream(url, timeout = 10000, redirectCount = 0) {
         
         // Check if we got any data
         if (bytesReceived === 0) {
-          resolve({
+          safeResolve({
             url,
             working: false,
             error: 'No data received'
@@ -116,7 +140,7 @@ async function checkStream(url, timeout = 10000, redirectCount = 0) {
           return;
         }
         
-        resolve({
+        safeResolve({
           url,
           working: true,
           statusCode: res.statusCode,
@@ -126,7 +150,8 @@ async function checkStream(url, timeout = 10000, redirectCount = 0) {
       
       res.on('error', (err) => {
         request.destroy();
-        resolve({
+        clearTimeout(absoluteTimeout);
+        safeResolve({
           url,
           working: false,
           error: err.message
@@ -135,7 +160,8 @@ async function checkStream(url, timeout = 10000, redirectCount = 0) {
     });
     
     request.on('error', (err) => {
-      resolve({
+      clearTimeout(absoluteTimeout);
+      safeResolve({
         url,
         working: false,
         error: err.message
@@ -144,12 +170,116 @@ async function checkStream(url, timeout = 10000, redirectCount = 0) {
     
     request.on('timeout', () => {
       request.destroy();
-      resolve({
+      clearTimeout(absoluteTimeout);
+      safeResolve({
         url,
         working: false,
         error: 'Timeout'
       });
     });
+  });
+}
+
+function deduplicateChannels(streams) {
+  const seen = new Map();
+  const unique = [];
+  
+  // Australian states/territories to strip from channel names
+  const auRegions = [
+    'nsw', 'vic', 'qld', 'sa', 'wa', 'tas', 'nt', 'act',
+    'new south wales', 'victoria', 'queensland', 'south australia',
+    'western australia', 'tasmania', 'northern territory',
+    'australian capital territory', 'australia', 'au',
+    'sydney', 'melbourne', 'brisbane', 'perth', 'adelaide',
+    'hobart', 'darwin', 'canberra'
+  ];
+  
+  for (const stream of streams) {
+    // Extract channel name from EXTINF line
+    const nameMatch = stream.extinf.match(/,\s*(.+)$/);
+    let channelName = nameMatch ? nameMatch[1].trim().toLowerCase() : '';
+    
+    // Remove common prefixes/suffixes and normalize
+    let baseName = channelName
+      .replace(/\s*\(.*?\)\s*/g, '') // Remove parenthetical content
+      .replace(/\s*\[.*?\]\s*/g, '') // Remove bracketed content
+      .replace(/\s+hd$/i, '') // Remove HD suffix
+      .replace(/\s+\+\d+$/i, '') // Remove +1 style suffixes
+      .trim();
+    
+    // Remove state/region identifiers
+    for (const region of auRegions) {
+      const regex = new RegExp(`\\b${region}\\b`, 'gi');
+      baseName = baseName.replace(regex, '').trim();
+    }
+    
+    // Clean up multiple spaces and special chars for comparison
+    const compareKey = baseName.replace(/[^a-z0-9]/g, '').toLowerCase();
+    const urlKey = stream.url.toLowerCase();
+    
+    // Skip if we've seen this exact URL
+    if (seen.has(urlKey)) {
+      continue;
+    }
+    
+    // Check if we've seen this base channel name already
+    let isDuplicate = false;
+    for (const [seenUrl, seenKey] of seen.entries()) {
+      if (seenKey === compareKey && compareKey.length > 0) {
+        isDuplicate = true;
+        break;
+      }
+    }
+    
+    if (!isDuplicate) {
+      seen.set(urlKey, compareKey);
+      unique.push(stream);
+    }
+  }
+  
+  return unique;
+}
+
+function filterUnwantedChannels(streams) {
+  const unwantedKeywords = [
+    // Religious
+    'hope channel', 'shine', 'gospel', 'church', 'christian', 'faith',
+    'god', 'bible', 'christ', 'prayer', 'worship', 'religious',
+    
+    // Shopping
+    'tvsn', 'shopping', 'expo channel', 'qvc', 'jewellery', 'jewelry',
+    'beauty', 'shop', 'buy', 'home shopping'
+  ];
+  
+  // Allowed AU channels (everything else from AU will be filtered out)
+  const allowedAUChannels = ['abc', 'channel 44', 'c31'];
+  
+  return streams.filter(stream => {
+    const nameMatch = stream.extinf.match(/,\s*(.+)$/);
+    const channelName = nameMatch ? nameMatch[1].trim().toLowerCase() : '';
+    
+    // Check if channel name contains any unwanted keywords
+    for (const keyword of unwantedKeywords) {
+      if (channelName.includes(keyword)) {
+        return false;
+      }
+    }
+    
+    // For AU channels, only allow specific ones
+    if (stream.source === 'AU') {
+      let isAllowed = false;
+      for (const allowed of allowedAUChannels) {
+        if (channelName.includes(allowed)) {
+          isAllowed = true;
+          break;
+        }
+      }
+      if (!isAllowed) {
+        return false;
+      }
+    }
+    
+    return true;
   });
 }
 
@@ -204,74 +334,106 @@ function sortChannels(streams) {
 async function generatePlaylist() {
   try {
     console.log('Fetching New Zealand playlist from:', NZ_PLAYLIST_URL);
-    const m3uContent = await fetchPlaylist(NZ_PLAYLIST_URL);
+    const nzContent = await fetchPlaylist(NZ_PLAYLIST_URL);
+    console.log('✓ NZ Playlist fetched successfully');
     
-    console.log('✓ Playlist fetched successfully');
+    console.log('Fetching Australian playlist from:', AU_PLAYLIST_URL);
+    const auContent = await fetchPlaylist(AU_PLAYLIST_URL);
+    console.log('✓ AU Playlist fetched successfully');
     
-    // Parse M3U to extract stream URLs
-    const lines = m3uContent.split('\n');
-    const streams = [];
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
+    // Parse both playlists
+    const parseM3U = (content) => {
+      const lines = content.split('\n');
+      const streams = [];
       
-      // If line starts with #EXTINF, next non-empty line is the stream URL
-      if (line.startsWith('#EXTINF:')) {
-        const extinfLine = line;
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
         
-        // Find the next non-empty, non-comment line (the stream URL)
-        for (let j = i + 1; j < lines.length; j++) {
-          const nextLine = lines[j].trim();
-          if (nextLine && !nextLine.startsWith('#')) {
-            streams.push({
-              extinf: extinfLine,
-              url: nextLine
-            });
-            break;
+        // If line starts with #EXTINF, next non-empty line is the stream URL
+        if (line.startsWith('#EXTINF:')) {
+          const extinfLine = line;
+          
+          // Find the next non-empty, non-comment line (the stream URL)
+          for (let j = i + 1; j < lines.length; j++) {
+            const nextLine = lines[j].trim();
+            if (nextLine && !nextLine.startsWith('#')) {
+              streams.push({
+                extinf: extinfLine,
+                url: nextLine,
+                source: content === nzContent ? 'NZ' : 'AU'
+              });
+              break;
+            }
           }
         }
       }
-    }
+      return streams;
+    };
     
-    console.log(`\nFound ${streams.length} streams. Checking which ones work...`);
+    const nzStreams = parseM3U(nzContent);
+    const auStreams = parseM3U(auContent);
+    
+    console.log(`\nFound ${nzStreams.length} NZ streams and ${auStreams.length} AU streams`);
+    
+    // Combine and deduplicate
+    const allStreams = [...nzStreams, ...auStreams];
+    const uniqueStreams = deduplicateChannels(allStreams);
+    
+    console.log(`✓ After deduplication: ${uniqueStreams.length} unique streams`);
+    
+    // Filter out unwanted channels
+    const filteredStreams = filterUnwantedChannels(uniqueStreams);
+    
+    console.log(`✓ After filtering: ${filteredStreams.length} streams (removed ${uniqueStreams.length - filteredStreams.length} unwanted channels)`);
+    console.log(`Checking which ones work (timeout: 5s per stream)...`);
     
     // Check streams in batches to avoid overwhelming the network
-    const batchSize = 10;
+    const batchSize = 5;
     const results = [];
     
-    for (let i = 0; i < streams.length; i += batchSize) {
-      const batch = streams.slice(i, i + batchSize);
+    for (let i = 0; i < filteredStreams.length; i += batchSize) {
+      const batch = filteredStreams.slice(i, i + batchSize);
       const batchResults = await Promise.all(
         batch.map(stream => checkStream(stream.url))
       );
       results.push(...batchResults);
       
       const workingCount = results.filter(r => r.working).length;
-      console.log(`Progress: ${results.length}/${streams.length} checked, ${workingCount} working`);
+      const failedCount = results.filter(r => !r.working).length;
+      console.log(`Progress: ${results.length}/${filteredStreams.length} checked, ${workingCount} working, ${failedCount} failed`);
     }
     
-    // Filter to only working streams
-    const workingStreams = streams.filter((stream, idx) => results[idx].working);
+    console.log('\n✓ All streams checked, filtering results...');
     
-    console.log(`\n✓ Stream check complete: ${workingStreams.length}/${streams.length} streams working`);
+    // Filter to only working streams
+    const workingStreams = filteredStreams.filter((stream, idx) => results[idx].working);
+    
+    console.log(`✓ Stream check complete: ${workingStreams.length}/${filteredStreams.length} streams working`);
+    console.log('Sorting channels...');
     
     // Sort channels
     const sortedStreams = sortChannels(workingStreams);
     console.log('✓ Channels sorted');
+    console.log('Building M3U content...');
     
     // Rebuild M3U with only working streams
-    let filteredM3u = '#EXTM3U x-tvg-url="https://i.mjh.nz/nz/epg.xml.gz"\n\n';
+    let filteredM3u = '#EXTM3U\n\n';
     
     for (const stream of sortedStreams) {
       filteredM3u += stream.extinf + '\n';
       filteredM3u += stream.url + '\n\n';
     }
     
+    console.log('✓ M3U content built');
+    console.log('Ensuring public directory exists...');
+    
     // Ensure public directory exists
     const publicDir = path.join(__dirname, '..', 'public');
     if (!fs.existsSync(publicDir)) {
       fs.mkdirSync(publicDir, { recursive: true });
     }
+    
+    console.log('Writing file...');
     
     // Write m3u file
     const filePath = path.join(publicDir, 'playlist.m3u');

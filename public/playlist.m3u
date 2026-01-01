@@ -1,4 +1,4 @@
-#EXTM3U x-tvg-url="https://i.mjh.nz/nz/epg.xml.gz"
+#EXTM3U
 
 #EXTINF:-1 channel-id="mjh-tvnz-1" tvg-id="mjh-tvnz-1" tvg-logo="https://i.mjh.nz/.images/tvnz-1.png" tvg-chno="1" group-title="Nz" , TVNZ 1
 https://i.mjh.nz/.r/tvnz-1.m3u8
@@ -51,14 +51,8 @@ https://i.mjh.nz/.r/trackside-1.m3u8
 #EXTINF:-1 channel-id="mjh-trackside-2" tvg-id="mjh-trackside-2" tvg-logo="https://i.mjh.nz/.images/trackside-2.png" tvg-chno="24" group-title="Nz" , Trackside 2
 https://i.mjh.nz/.r/trackside-2.m3u8
 
-#EXTINF:-1 channel-id="mjh-shine-tv" tvg-id="mjh-shine-tv" tvg-logo="https://i.mjh.nz/.images/shine-tv.png" tvg-chno="25" group-title="Nz" , Shine TV
-https://i.mjh.nz/.r/shine-tv.m3u8
-
 #EXTINF:-1 channel-id="mjh-firstlight" tvg-id="mjh-firstlight" tvg-logo="https://i.mjh.nz/.images/firstlight.png" tvg-chno="26" group-title="Nz" , Firstlight
 https://i.mjh.nz/.r/firstlight.m3u8
-
-#EXTINF:-1 channel-id="mjh-hope-channel" tvg-id="mjh-hope-channel" tvg-logo="https://i.mjh.nz/.images/hope-channel.png" tvg-chno="27" group-title="Nz" , Hope Channel
-https://i.mjh.nz/.r/hope-channel.m3u8
 
 #EXTINF:-1 channel-id="mjh-parliament-tv" tvg-id="mjh-parliament-tv" tvg-logo="https://i.mjh.nz/.images/parliament-tv.png" tvg-chno="31" group-title="Nz" , Parliament TV
 https://i.mjh.nz/.r/parliament-tv.m3u8
@@ -72,9 +66,6 @@ https://i.mjh.nz/.r/ch200.m3u8
 #EXTINF:-1 channel-id="mjh-trackside-premier" tvg-id="mjh-trackside-premier" tvg-logo="https://i.mjh.nz/.images/trackside-premier.png" group-title="Nz" , Trackside Premier
 https://i.mjh.nz/.r/trackside-premier.m3u8
 
-#EXTINF:-1 channel-id="mjh-tvsn-shopping" tvg-id="mjh-tvsn-shopping" tvg-logo="https://i.mjh.nz/.images/tvsn-shopping.png" group-title="Nz" , TVSN Shopping
-https://i.mjh.nz/.r/tvsn-shopping.m3u8
-
 #EXTINF:-1 channel-id="mjh-redbull-tv" tvg-id="mjh-redbull-tv" tvg-logo="https://i.mjh.nz/.images/redbull-tv.png" group-title="World" , Redbull TV
 https://i.mjh.nz/.r/redbull-tv.m3u8
 
@@ -83,6 +74,27 @@ https://i.mjh.nz/.r/channel-news-asia.m3u8
 
 #EXTINF:-1 channel-id="mjh-dw-news" tvg-id="mjh-dw-news" tvg-logo="https://www.dw.com/images/icons/favicon-540x540.png" group-title="World" , DW English
 https://i.mjh.nz/.r/dw-news.m3u8
+
+#EXTINF:-1 tvg-id="ABCNews.au",ABC News
+https://abc-news-dmd-streams-1.akamaized.net/out/v1/701126012d044971b3fa89406a440133/index.m3u8
+
+#EXTINF:-1 tvg-id="ABCEntertains.au@Sydney",ABC Entertains (720p)
+https://c.mjh.nz/abc-me.m3u8
+
+#EXTINF:-1 tvg-id="ABCKids.au@Sydney",ABC Kids
+https://c.mjh.nz/abc-kids.m3u8
+
+#EXTINF:-1 tvg-id="ABCTV.au@ACT",ABC TV ACT (720p)
+https://c.mjh.nz/abc-act.m3u8
+
+#EXTINF:-1 tvg-id="ABCTVPlus.au@Sydney",ABC TV Plus (720p)
+https://c.mjh.nz/abc-tv-plus.m3u8
+
+#EXTINF:-1 tvg-id="C31Melbourne.au@SD",C31 Melbourne (240p)
+https://d1k6kax80wecy5.cloudfront.net/RLnAKY/index.m3u8
+
+#EXTINF:-1 tvg-id="Channel44.au@SD",Channel 44 (480p)
+https://d1k6kax80wecy5.cloudfront.net/WFqZJc/index.m3u8
 
 #EXTINF:-1 channel-id="mjh-mood-1290" tvg-id="mjh-mood-1290" tvg-logo="https://gizmeon.mdc.akamaized.net/thumbnails/fastchannel/1744244355255.png" group-title="Nz" , JuiceTV
 https://i.mjh.nz/.r/mood-1290.m3u8
