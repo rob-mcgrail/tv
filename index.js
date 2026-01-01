@@ -1,6 +1,8 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
+const zlib = require('zlib');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,22 +21,21 @@ app.get('/playlist.m3u', (req, res) => {
 
 // Dynamic EPG XML route
 app.get('/epg.xml', (req, res) => {
-  const currentDate = new Date().toISOString();
+  const epgUrl = 'https://i.mjh.nz/nz/epg.xml.gz';
   
-  // Generate EPG XML dynamically
-  const epgXml = `<?xml version="1.0" encoding="UTF-8"?>
-<tv generator-info-name="TV EPG" generator-info-url="/">
-  <channel id="channel1">
-    <display-name>Channel 1</display-name>
-  </channel>
-  <programme start="${currentDate}" stop="${currentDate}" channel="channel1">
-    <title lang="en">Sample Program</title>
-    <desc lang="en">This is a sample EPG entry</desc>
-  </programme>
-</tv>`;
-
-  res.setHeader('Content-Type', 'application/xml');
-  res.send(epgXml);
+  https.get(epgUrl, (response) => {
+    if (response.statusCode !== 200) {
+      return res.status(response.statusCode).send('Failed to fetch EPG');
+    }
+    
+    res.setHeader('Content-Type', 'application/xml');
+    
+    // Decompress the gzipped content and pipe to response
+    response.pipe(zlib.createGunzip()).pipe(res);
+  }).on('error', (err) => {
+    console.error('Error fetching EPG:', err);
+    res.status(500).send('Error fetching EPG');
+  });
 });
 
 // Health check

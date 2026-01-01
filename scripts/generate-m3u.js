@@ -287,7 +287,7 @@ function filterUnwantedChannels(streams) {
     'beauty', 'shop', 'buy', 'home shopping',
     
     // Kids
-    'cbeebies',
+    'cbeebies', 'cbbc',
     
     // Other
     'liveevent'
