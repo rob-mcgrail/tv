@@ -312,7 +312,7 @@ function filterUnwantedChannels(streams) {
     'cbeebies', 'cbbc',
     
     // Other
-    'liveevent'
+    'liveevent', 'firstlight', 'trackside', 'news12', 'akaku55'
   ];
   
   // US-specific unwanted keywords
@@ -341,8 +341,8 @@ function filterUnwantedChannels(streams) {
     
     // For US channels, apply additional filters
     if (stream.source === 'US') {
-      // Exclude channels starting with W
-      if (channelNameRaw.startsWith('W')) {
+      // Exclude channels starting with W or Al
+      if (channelNameRaw.startsWith('W') || channelNameRaw.startsWith('Al')) {
         return false;
       }
       
@@ -439,6 +439,22 @@ function sortChannels(streams) {
       
       const isNewsA = nameA.includes('news');
       const isNewsB = nameB.includes('news');
+      
+      // Among news channels, prioritize ABC, then Fox
+      if (isNewsA && isNewsB) {
+        const isABCA = nameA.includes('abc');
+        const isABCB = nameB.includes('abc');
+        const isFoxA = nameA.includes('fox');
+        const isFoxB = nameB.includes('fox');
+        
+        // ABC news comes first
+        if (isABCA && !isABCB) return -1;
+        if (!isABCA && isABCB) return 1;
+        
+        // Then Fox news
+        if (isFoxA && !isFoxB) return -1;
+        if (!isFoxA && isFoxB) return 1;
+      }
       
       // News channels come first among US channels
       if (isNewsA && !isNewsB) return -1;
