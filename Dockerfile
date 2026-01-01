@@ -5,14 +5,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --production
-
-# Copy app files
-COPY . .
-
-# Generate m3u file
-RUN npm run generate
+# Install dependencies (including dev dependencies for nodemon)
+RUN npm install
 
 # Expose port
 EXPOSE 3000

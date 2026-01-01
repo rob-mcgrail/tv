@@ -7,7 +7,9 @@ services:
       - "3000:3000"
     environment:
       - PORT=3000
-      - NODE_ENV=production
+      - NODE_ENV=development
     restart: unless-stopped
     volumes:
-      - ./public:/app/public
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
