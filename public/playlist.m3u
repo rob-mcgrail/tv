@@ -1,0 +1,124 @@
+#EXTM3U x-tvg-url="https://i.mjh.nz/nz/epg.xml.gz"
+
+#EXTINF:-1 channel-id="mjh-tvnz-1" tvg-id="mjh-tvnz-1" tvg-logo="https://i.mjh.nz/.images/tvnz-1.png" tvg-chno="1" group-title="Nz" , TVNZ 1
+https://i.mjh.nz/.r/tvnz-1.m3u8
+
+#EXTINF:-1 channel-id="mjh-tvnz-2" tvg-id="mjh-tvnz-2" tvg-logo="https://i.mjh.nz/.images/tvnz-2.png" tvg-chno="2" group-title="Nz" , TVNZ 2
+https://i.mjh.nz/.r/tvnz-2.m3u8
+
+#EXTINF:-1 channel-id="mjh-three" tvg-id="mjh-three" tvg-logo="https://i.mjh.nz/.images/three.png" tvg-chno="3" group-title="Nz" , Three
+https://i.mjh.nz/.r/three.m3u8
+
+#EXTINF:-1 channel-id="mjh-bravo" tvg-id="mjh-bravo" tvg-logo="https://i.mjh.nz/.images/bravo.png" tvg-chno="4" group-title="Nz" , Bravo
+https://i.mjh.nz/.r/bravo.m3u8
+
+#EXTINF:-1 channel-id="mjh-maori-tv" tvg-id="mjh-maori-tv" tvg-logo="https://i.mjh.nz/.images/maori-tv.png" tvg-chno="5" group-title="Nz" , Whakaata Māori
+https://i.mjh.nz/.r/maori-tv.m3u8
+
+#EXTINF:-1 channel-id="mjh-tvnz-duke" tvg-id="mjh-tvnz-duke" tvg-logo="https://i.mjh.nz/.images/tvnz-duke.png" tvg-chno="6" group-title="Nz" , DUKE
+https://i.mjh.nz/.r/tvnz-duke.m3u8
+
+#EXTINF:-1 channel-id="mjh-eden" tvg-id="mjh-eden" tvg-logo="https://i.mjh.nz/.images/eden.png" tvg-chno="8" group-title="Nz" , eden
+https://i.mjh.nz/.r/eden.m3u8
+
+#EXTINF:-1 channel-id="mjh-bravo-plus1" tvg-id="mjh-bravo-plus1" tvg-logo="https://i.mjh.nz/.images/bravo-plus1.png" tvg-chno="9" group-title="Nz" , Bravo PLUS 1
+https://i.mjh.nz/.r/bravo-plus1.m3u8
+
+#EXTINF:-1 channel-id="mjh-te-reo" tvg-id="mjh-te-reo" tvg-logo="https://i.mjh.nz/.images/te-reo.png" tvg-chno="10" group-title="Nz" , Te Reo
+https://i.mjh.nz/.r/te-reo.m3u8
+
+#EXTINF:-1 channel-id="mjh-three-plus1" tvg-id="mjh-three-plus1" tvg-logo="https://i.mjh.nz/.images/three-plus1.png" tvg-chno="13" group-title="Nz" , ThreePlus1
+https://i.mjh.nz/.r/three-plus1.m3u8
+
+#EXTINF:-1 channel-id="mjh-rush-nz" tvg-id="mjh-rush-nz" tvg-logo="https://i.mjh.nz/.images/rush-nz.png" tvg-chno="14" group-title="Nz" , RUSH
+https://i.mjh.nz/.r/rush-nz.m3u8
+
+#EXTINF:-1 channel-id="mjh-prime" tvg-id="mjh-prime" tvg-logo="https://i.mjh.nz/.images/sky-open.png" tvg-chno="15" group-title="Nz" , Sky Open
+https://i.mjh.nz/.r/prime.m3u8
+
+#EXTINF:-1 channel-id="mjh-eden-plus1" tvg-id="mjh-eden-plus1" tvg-logo="https://i.mjh.nz/.images/eden-plus1.png" tvg-chno="18" group-title="Nz" , eden+1
+https://i.mjh.nz/.r/eden-plus1.m3u8
+
+#EXTINF:-1 channel-id="mjh-al-jazeera" tvg-id="mjh-al-jazeera" tvg-logo="https://i.mjh.nz/.images/al-jazeera.png" tvg-chno="20" group-title="Nz" , Al Jazeera
+https://i.mjh.nz/.r/al-jazeera.m3u8
+
+#EXTINF:-1 channel-id="mjh-prime-plus1" tvg-id="mjh-prime-plus1" tvg-logo="https://i.mjh.nz/.images/sky-open-plus1.png" tvg-chno="21" group-title="Nz" , Sky Open+1
+https://i.mjh.nz/.r/prime-plus1.m3u8
+
+#EXTINF:-1 channel-id="mjh-trackside-1" tvg-id="mjh-trackside-1" tvg-logo="https://i.mjh.nz/.images/trackside-1.png" tvg-chno="23" group-title="Nz" , Trackside 1
+https://i.mjh.nz/.r/trackside-1.m3u8
+
+#EXTINF:-1 channel-id="mjh-trackside-2" tvg-id="mjh-trackside-2" tvg-logo="https://i.mjh.nz/.images/trackside-2.png" tvg-chno="24" group-title="Nz" , Trackside 2
+https://i.mjh.nz/.r/trackside-2.m3u8
+
+#EXTINF:-1 channel-id="mjh-shine-tv" tvg-id="mjh-shine-tv" tvg-logo="https://i.mjh.nz/.images/shine-tv.png" tvg-chno="25" group-title="Nz" , Shine TV
+https://i.mjh.nz/.r/shine-tv.m3u8
+
+#EXTINF:-1 channel-id="mjh-firstlight" tvg-id="mjh-firstlight" tvg-logo="https://i.mjh.nz/.images/firstlight.png" tvg-chno="26" group-title="Nz" , Firstlight
+https://i.mjh.nz/.r/firstlight.m3u8
+
+#EXTINF:-1 channel-id="mjh-hope-channel" tvg-id="mjh-hope-channel" tvg-logo="https://i.mjh.nz/.images/hope-channel.png" tvg-chno="27" group-title="Nz" , Hope Channel
+https://i.mjh.nz/.r/hope-channel.m3u8
+
+#EXTINF:-1 channel-id="mjh-parliament-tv" tvg-id="mjh-parliament-tv" tvg-logo="https://i.mjh.nz/.images/parliament-tv.png" tvg-chno="31" group-title="Nz" , Parliament TV
+https://i.mjh.nz/.r/parliament-tv.m3u8
+
+#EXTINF:-1 channel-id="mjh-wairarapa-tv" tvg-id="mjh-wairarapa-tv" tvg-logo="https://i.mjh.nz/.images/wairarapa-tv.png" tvg-chno="41" group-title="Nz" , Wairarapa TV
+https://i.mjh.nz/.r/wairarapa-tv.m3u8
+
+#EXTINF:-1 channel-id="mjh-ch200" tvg-id="mjh-ch200" tvg-logo="https://i.mjh.nz/.images/ch200.png" tvg-chno="200" group-title="Nz" , CH200
+https://i.mjh.nz/.r/ch200.m3u8
+
+#EXTINF:-1 channel-id="mjh-trackside-premier" tvg-id="mjh-trackside-premier" tvg-logo="https://i.mjh.nz/.images/trackside-premier.png" group-title="Nz" , Trackside Premier
+https://i.mjh.nz/.r/trackside-premier.m3u8
+
+#EXTINF:-1 channel-id="mjh-tvsn-shopping" tvg-id="mjh-tvsn-shopping" tvg-logo="https://i.mjh.nz/.images/tvsn-shopping.png" group-title="Nz" , TVSN Shopping
+https://i.mjh.nz/.r/tvsn-shopping.m3u8
+
+#EXTINF:-1 channel-id="mjh-redbull-tv" tvg-id="mjh-redbull-tv" tvg-logo="https://i.mjh.nz/.images/redbull-tv.png" group-title="World" , Redbull TV
+https://i.mjh.nz/.r/redbull-tv.m3u8
+
+#EXTINF:-1 channel-id="mjh-channel-news-asia" tvg-id="mjh-channel-news-asia" tvg-logo="https://i.mjh.nz/.images/channel-news-asia.png" group-title="World" , Channel News Asia (CNA)
+https://i.mjh.nz/.r/channel-news-asia.m3u8
+
+#EXTINF:-1 channel-id="mjh-dw-news" tvg-id="mjh-dw-news" tvg-logo="https://www.dw.com/images/icons/favicon-540x540.png" group-title="World" , DW English
+https://i.mjh.nz/.r/dw-news.m3u8
+
+#EXTINF:-1 channel-id="mjh-mood-1290" tvg-id="mjh-mood-1290" tvg-logo="https://gizmeon.mdc.akamaized.net/thumbnails/fastchannel/1744244355255.png" group-title="Nz" , JuiceTV
+https://i.mjh.nz/.r/mood-1290.m3u8
+
+#EXTINF:-1 channel-id="mjh-mood-1289" tvg-id="mjh-mood-1289" tvg-logo="https://gizmeon.mdc.akamaized.net/thumbnails/fastchannel/1762940270646.png" group-title="Nz" , J2
+https://i.mjh.nz/.r/mood-1289.m3u8
+
+#EXTINF:-1 channel-id="mjh-mood-1286" tvg-id="mjh-mood-1286" tvg-logo="https://gizmeon.mdc.akamaized.net/thumbnails/fastchannel/1744244778333.png" group-title="Nz" , Big Rig
+https://i.mjh.nz/.r/mood-1286.m3u8
+
+#EXTINF:-1 channel-id="mjh-discovery-hgtv" tvg-id="mjh-discovery-hgtv" tvg-logo="https://cdn.fullscreen.nz/v1/images/channel/linear/hgtv/logos/default.png" tvg-chno="19" group-title="Nz" , HGTV
+https://i.mjh.nz/.r/discovery-hgtv.m3u8
+
+#EXTINF:-1 channel-id="mjh-discovery-ptcn" tvg-id="mjh-discovery-ptcn" tvg-logo="https://cdn-prod.fullscreen.nz/v1/images/channel/linear/ptcn/logos/default.png" group-title="Nz" , CNN Headlines
+https://i.mjh.nz/.r/discovery-ptcn.m3u8
+
+#EXTINF:-1 channel-id="mjh-discovery-ptms" tvg-id="mjh-discovery-ptms" tvg-logo="https://cdn.fullscreen.nz/v1/images/channel/linear/ptms/logos/default.png" group-title="Nz" , MovieSphere
+https://i.mjh.nz/.r/discovery-ptms.m3u8
+
+#EXTINF:-1 channel-id="mjh-discovery-fast3" tvg-id="mjh-discovery-fast3" tvg-logo="https://cdn.fullscreen.nz/v1/images/channel/linear/fast3/logos/default.png" group-title="Nz" , Below Deck Vault
+https://i.mjh.nz/.r/discovery-fast3.m3u8
+
+#EXTINF:-1 channel-id="mjh-discovery-ptmb" tvg-id="mjh-discovery-ptmb" tvg-logo="https://cdn-prod.fullscreen.nz/v1/images/channel/linear/ptmb/logos/default.png" group-title="Nz" , MythBusters
+https://i.mjh.nz/.r/discovery-ptmb.m3u8
+
+#EXTINF:-1 channel-id="mjh-discovery-fast4" tvg-id="mjh-discovery-fast4" tvg-logo="https://cdn.fullscreen.nz/v1/images/channel/linear/fast4/logos/default.png" group-title="Nz" , Warner Bros TV True Crime
+https://i.mjh.nz/.r/discovery-fast4.m3u8
+
+#EXTINF:-1 channel-id="mjh-discovery-fast5" tvg-id="mjh-discovery-fast5" tvg-logo="https://cdn.fullscreen.nz/v1/images/channel/linear/fast5/logos/default.png" group-title="Nz" , Warner Bros TV Paranormal
+https://i.mjh.nz/.r/discovery-fast5.m3u8
+
+#EXTINF:-1 channel-id="mjh-discovery-fast1" tvg-id="mjh-discovery-fast1" tvg-logo="https://cdn.fullscreen.nz/v1/images/channel/linear/fast1/logos/default.png" group-title="Nz" , Warner Bros TV Motorheads
+https://i.mjh.nz/.r/discovery-fast1.m3u8
+
+#EXTINF:-1 channel-id="mjh-discovery-fast2" tvg-id="mjh-discovery-fast2" tvg-logo="https://cdn.fullscreen.nz/v1/images/channel/linear/fast2/logos/default.png" group-title="Nz" , Warner Bros TV Deadliest Catch
+https://i.mjh.nz/.r/discovery-fast2.m3u8
+
+#EXTINF:-1 channel-id="mjh-discovery-fast6" tvg-id="mjh-discovery-fast6" tvg-logo="https://cdn.fullscreen.nz/v1/images/channel/linear/fast6/logos/default.png" group-title="Nz" , Warner Bros TV House Hunters
+https://i.mjh.nz/.r/discovery-fast6.m3u8
