@@ -538,16 +538,13 @@ async function generatePlaylist() {
     
     console.log(`\nFound ${nzStreams.length} NZ streams, ${auStreams.length} AU streams, ${ukStreams.length} UK streams, and ${usStreams.length} US streams`);
     
-    // Combine and deduplicate
+    // Combine all streams
     const allStreams = [...nzStreams, ...auStreams, ...ukStreams, ...usStreams];
-    const uniqueStreams = deduplicateChannels(allStreams);
-    
-    console.log(`✓ After deduplication: ${uniqueStreams.length} unique streams`);
     
     // Filter out unwanted channels
-    const filteredStreams = filterUnwantedChannels(uniqueStreams);
+    const filteredStreams = filterUnwantedChannels(allStreams);
     
-    console.log(`✓ After filtering: ${filteredStreams.length} streams (removed ${uniqueStreams.length - filteredStreams.length} unwanted channels)`);
+    console.log(`✓ After filtering: ${filteredStreams.length} streams (removed ${allStreams.length - filteredStreams.length} unwanted channels)`);
     
     // Load cache
     const cache = loadCache();
@@ -594,10 +591,15 @@ async function generatePlaylist() {
     const workingStreams = filteredStreams.filter((stream, idx) => results[idx].working);
     
     console.log(`✓ Stream check complete: ${workingStreams.length}/${filteredStreams.length} streams working`);
+    
+    // Now deduplicate among working streams only
+    const uniqueWorkingStreams = deduplicateChannels(workingStreams);
+    
+    console.log(`✓ After deduplication: ${uniqueWorkingStreams.length} unique working streams`);
     console.log('Sorting channels...');
     
     // Sort channels
-    const sortedStreams = sortChannels(workingStreams);
+    const sortedStreams = sortChannels(uniqueWorkingStreams);
     console.log('✓ Channels sorted');
     console.log('Building M3U content...');
     
@@ -625,7 +627,7 @@ async function generatePlaylist() {
     fs.writeFileSync(filePath, filteredM3u.trim() + '\n');
     
     console.log('✓ M3U playlist generated successfully at:', filePath);
-    console.log(`✓ Total working channels: ${workingStreams.length}`);
+    console.log(`✓ Total working channels: ${uniqueWorkingStreams.length}`);
     
   } catch (error) {
     console.error('Error generating playlist:', error.message);
