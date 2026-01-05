@@ -7,6 +7,10 @@ const NZ_PLAYLIST_URL = 'https://i.mjh.nz/nz/raw-tv.m3u8';
 const AU_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/au.m3u';
 const UK_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/uk.m3u';
 const US_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/us.m3u';
+const FR_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/fr.m3u';
+const JP_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/jp.m3u';
+const DE_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/de.m3u';
+const CN_PLAYLIST_URL = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/cn.m3u';
 const CACHE_FILE = path.join(__dirname, '..', 'stream-cache.json');
 const CACHE_EXPIRY_DAYS = 7;
 
@@ -502,6 +506,22 @@ async function generatePlaylist() {
     const usContent = await fetchPlaylist(US_PLAYLIST_URL);
     console.log('✓ US Playlist fetched successfully');
     
+    console.log('Fetching French playlist from:', FR_PLAYLIST_URL);
+    const frContent = await fetchPlaylist(FR_PLAYLIST_URL);
+    console.log('✓ FR Playlist fetched successfully');
+    
+    console.log('Fetching Japanese playlist from:', JP_PLAYLIST_URL);
+    const jpContent = await fetchPlaylist(JP_PLAYLIST_URL);
+    console.log('✓ JP Playlist fetched successfully');
+    
+    console.log('Fetching German playlist from:', DE_PLAYLIST_URL);
+    const deContent = await fetchPlaylist(DE_PLAYLIST_URL);
+    console.log('✓ DE Playlist fetched successfully');
+    
+    console.log('Fetching Chinese playlist from:', CN_PLAYLIST_URL);
+    const cnContent = await fetchPlaylist(CN_PLAYLIST_URL);
+    console.log('✓ CN Playlist fetched successfully');
+    
     // Parse all playlists
     const parseM3U = (content, source) => {
       const lines = content.split('\n');
@@ -535,11 +555,15 @@ async function generatePlaylist() {
     const auStreams = parseM3U(auContent, 'AU');
     const ukStreams = parseM3U(ukContent, 'UK');
     const usStreams = parseM3U(usContent, 'US');
+    const frStreams = parseM3U(frContent, 'FR');
+    const jpStreams = parseM3U(jpContent, 'JP');
+    const deStreams = parseM3U(deContent, 'DE');
+    const cnStreams = parseM3U(cnContent, 'CN');
     
-    console.log(`\nFound ${nzStreams.length} NZ streams, ${auStreams.length} AU streams, ${ukStreams.length} UK streams, and ${usStreams.length} US streams`);
+    console.log(`\nFound ${nzStreams.length} NZ streams, ${auStreams.length} AU streams, ${ukStreams.length} UK streams, ${usStreams.length} US streams, ${frStreams.length} FR streams, ${jpStreams.length} JP streams, ${deStreams.length} DE streams, and ${cnStreams.length} CN streams`);
     
     // Combine all streams
-    const allStreams = [...nzStreams, ...auStreams, ...ukStreams, ...usStreams];
+    const allStreams = [...nzStreams, ...auStreams, ...ukStreams, ...usStreams, ...frStreams, ...jpStreams, ...deStreams, ...cnStreams];
     
     // Filter out unwanted channels
     const filteredStreams = filterUnwantedChannels(allStreams);
